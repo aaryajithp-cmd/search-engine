@@ -3,7 +3,10 @@
 import time
 from typing import Any
 
-from ddgs import DDGS
+try:
+    from ddgs import DDGS
+except ImportError:
+    from duckduckgo_search import DDGS
 
 
 def search_web(queries: list[str], max_results_per_query: int = 5) -> list[dict[str, str]]:
@@ -12,16 +15,18 @@ def search_web(queries: list[str], max_results_per_query: int = 5) -> list[dict[
     seen_urls: set[str] = set()
 
     for query in queries:
+        query_str = query.strip()
+        if not query_str:
+            continue
         query_results: list[dict[str, Any]] = []
         for attempt in range(2):
             try:
-                query_results = list(DDGS().text(query, max_results=max_results_per_query))
+                query_results = list(DDGS().text(query_str, max_results=max_results_per_query))
                 if query_results:
                     break
             except Exception:
-                pass
-            if attempt == 0:
-                time.sleep(1)
+                if attempt == 0:
+                    time.sleep(1)
 
         for item in query_results:
             url = str(item.get("href") or item.get("url") or "").strip()
