@@ -47,6 +47,6 @@ def extract_sources(results: list[dict[str, Any]], max_pages: int = 5) -> list[d
                 "title": result["title"],
                 "url": result["url"],
                 "text": text[:3500],
-  nsdc project          }
+            }
         )
     return sources
