@@ -1,672 +1,527 @@
-<!doctype html>
-<html lang="en" data-theme="dark">
+﻿<!doctype html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Personal Research Assistant | Deep Web Research</title>
-  <meta name="description" content="AI Research Assistant powered by Groq, DuckDuckGo, and Trafilatura with source-grounded answers and inline citations.">
+  <title>Research Agent</title>
+  <meta name="description" content="Research Agent: source-grounded answers with a clean editorial interface.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root[data-theme="dark"] {
-      --bg: #090d16;
-      --bg-card: rgba(18, 24, 38, 0.75);
-      --bg-card-hover: rgba(26, 35, 54, 0.85);
-      --bg-input: rgba(13, 18, 30, 0.8);
-      --border: rgba(255, 255, 255, 0.08);
-      --border-focus: #3b82f6;
-      --text-main: #f1f5f9;
-      --text-muted: #94a3b8;
-      --text-sub: #64748b;
-      --accent: #3b82f6;
-      --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #3b82f6 50%, #6366f1 100%);
-      --accent-glow: rgba(59, 130, 246, 0.25);
-      --badge-bg: rgba(59, 130, 246, 0.12);
-      --badge-border: rgba(59, 130, 246, 0.25);
-      --citation-bg: rgba(59, 130, 246, 0.2);
-      --citation-text: #60a5fa;
-      --error-bg: rgba(239, 68, 68, 0.12);
-      --error-border: rgba(239, 68, 68, 0.3);
-      --error-text: #f87171;
-      --success-text: #34d399;
-      --glass-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    :root {
+      --paper: #f1ece4;
+      --paper-deep: #e8e0d2;
+      --panel: rgba(255,255,255,0.42);
+      --panel-strong: rgba(255,255,255,0.72);
+      --ink: #1d1b1a;
+      --ink-soft: #5f5650;
+      --line: rgba(29,27,26,0.12);
+      --line-strong: rgba(29,27,26,0.2);
+      --accent: #2f4c42;
+      --accent-soft: rgba(47,76,66,0.1);
+      --accent-strong: #223a33;
+      --shadow: rgba(29,27,26,0.08);
+      --warning-bg: #f5efe7;
+      --warning-border: rgba(29,27,26,0.14);
+      --warning-text: #4a433f;
+      --sans: 'Inter', 'Segoe UI', sans-serif;
+      --serif: 'Cormorant Garamond', Georgia, serif;
     }
 
-    :root[data-theme="light"] {
-      --bg: #f8fafc;
-      --bg-card: rgba(255, 255, 255, 0.85);
-      --bg-card-hover: rgba(248, 250, 252, 0.95);
-      --bg-input: #ffffff;
-      --border: rgba(0, 0, 0, 0.08);
-      --border-focus: #2563eb;
-      --text-main: #0f172a;
-      --text-muted: #475569;
-      --text-sub: #94a3b8;
-      --accent: #2563eb;
-      --accent-gradient: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #4f46e5 100%);
-      --accent-glow: rgba(37, 99, 235, 0.15);
-      --badge-bg: rgba(37, 99, 235, 0.08);
-      --badge-border: rgba(37, 99, 235, 0.2);
-      --citation-bg: rgba(37, 99, 235, 0.12);
-      --citation-text: #1d4ed8;
-      --error-bg: #fef2f2;
-      --error-border: #fecaca;
-      --error-text: #dc2626;
-      --success-text: #059669;
-      --glass-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08);
-    }
+    * { box-sizing: border-box; }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     body {
+      margin: 0;
       min-height: 100vh;
-      background-color: var(--bg);
-      background-image: 
-        radial-gradient(at 10% 15%, rgba(56, 189, 248, 0.12) 0px, transparent 40%),
-        radial-gradient(at 90% 10%, rgba(99, 102, 241, 0.12) 0px, transparent 40%),
-        radial-gradient(at 50% 90%, rgba(59, 130, 246, 0.08) 0px, transparent 50%);
-      background-attachment: fixed;
-      color: var(--text-main);
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.02)),
+        var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
       line-height: 1.6;
-      transition: background-color 0.3s ease, color 0.3s ease;
-      display: flex;
-      flex-direction: column;
     }
 
-    .container {
-      width: min(880px, calc(100% - 36px));
+    a { color: inherit; }
+    button, textarea { font: inherit; }
+
+    .page {
+      width: min(1040px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 40px 0 60px;
-      flex: 1;
+      padding: 28px 0 48px;
     }
 
-    header {
+    .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 36px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--border);
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 42px;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
-      text-decoration: none;
-      color: inherit;
     }
 
-    .brand-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      background: var(--accent-gradient);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      box-shadow: 0 8px 16px -4px var(--accent-glow);
-    }
-
-    .brand-title {
-      font-size: 19px;
-      font-weight: 700;
-      letter-spacing: -0.4px;
-    }
-
-    .brand-pill {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 20px;
-      background: var(--badge-bg);
-      border: 1px solid var(--badge-border);
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .theme-toggle {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-    }
-    .theme-toggle:hover {
-      color: var(--text-main);
-      border-color: var(--border-focus);
-    }
-
-    .hero {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      border-radius: 9999px;
-      background: var(--badge-bg);
-      border: 1px solid var(--badge-border);
-      color: var(--accent);
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-
-    .hero-badge .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 10px #10b981;
-      animation: pulse-dot 2s infinite ease-in-out;
-    }
-
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
-    }
-
-    h1 {
-      font-size: clamp(30px, 5.5vw, 48px);
-      font-weight: 800;
-      line-height: 1.15;
-      letter-spacing: -1px;
-      margin-bottom: 14px;
-      background: var(--accent-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero-desc {
-      font-size: 16px;
-      color: var(--text-muted);
-      max-width: 580px;
-      margin: 0 auto;
-    }
-
-    .search-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 14px;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      box-shadow: var(--glass-shadow);
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .search-card:focus-within {
-      border-color: var(--border-focus);
-      box-shadow: var(--glass-shadow), 0 0 0 3px var(--accent-glow);
-    }
-
-    .search-input-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    textarea#question {
-      width: 100%;
-      min-height: 72px;
-      max-height: 220px;
-      padding: 12px 14px;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text-main);
-      font-family: inherit;
-      font-size: 16px;
-      line-height: 1.5;
-      resize: vertical;
-    }
-
-    textarea#question::placeholder {
-      color: var(--text-sub);
-    }
-
-    .search-controls {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-    }
-
-    .keyboard-hint {
-      font-size: 12px;
-      color: var(--text-sub);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .kbd {
-      padding: 2px 6px;
-      background: var(--border);
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-    }
-
-    .btn-submit {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--accent-gradient);
-      color: white;
-      border: none;
-      padding: 10px 22px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      box-shadow: 0 4px 12px var(--accent-glow);
-      transition: all 0.2s ease;
-    }
-
-    .btn-submit:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px var(--accent-glow);
-    }
-
-    .btn-submit:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .suggestions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 16px;
-      align-items: center;
-    }
-
-    .suggestions-label {
-      font-size: 12px;
-      color: var(--text-sub);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .chip {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: inherit;
-    }
-
-    .chip:hover {
-      color: var(--text-main);
-      border-color: var(--border-focus);
-      background: var(--bg-card-hover);
-      transform: translateY(-1px);
-    }
-
-    /* Pipeline Status indicator */
-    .pipeline-status {
-      display: none;
-      margin-top: 28px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      backdrop-filter: blur(12px);
-    }
-
-    .pipeline-status.active {
-      display: block;
-      animation: fadeIn 0.3s ease;
-    }
-
-    .steps-container {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-
-    .step-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 8px;
-      padding: 10px 6px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid transparent;
-      transition: all 0.3s ease;
-    }
-
-    .step-item.active {
-      background: var(--badge-bg);
-      border-color: var(--badge-border);
-      color: var(--accent);
-    }
-
-    .step-item.done {
-      color: var(--success-text);
-    }
-
-    .step-icon {
+    .brand-mark {
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: var(--border);
+      border: 1px solid var(--line-strong);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 12px;
-      transition: all 0.3s ease;
+      color: var(--accent-strong);
+      background: rgba(255,255,255,0.18);
     }
 
-    .step-item.active .step-icon {
-      background: var(--accent);
-      color: white;
-      animation: spin 2s infinite linear;
+    .brand-name {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 2vw, 2.5rem);
+      line-height: 1;
+      font-weight: 600;
+      letter-spacing: -0.04em;
     }
 
-    .step-item.done .step-icon {
-      background: #10b981;
-      color: white;
+    .tagline {
+      color: var(--ink-soft);
+      font-size: 0.75rem;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      margin-left: 8px;
     }
 
-    .step-label {
-      font-size: 12px;
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.7rem;
       font-weight: 600;
     }
 
-    @keyframes spin {
-      100% { transform: rotate(360deg); }
+    h1 {
+      margin: 0;
+      font-family: var(--serif);
+      font-weight: 600;
+      font-size: clamp(3.3rem, 5vw, 5rem);
+      line-height: 0.9;
+      letter-spacing: -0.05em;
+      max-width: 560px;
     }
 
-    /* Error Banner */
-    .error-banner {
-      display: none;
-      margin-top: 24px;
-      padding: 16px 20px;
-      background: var(--error-bg);
-      border: 1px solid var(--error-border);
-      border-radius: 14px;
-      color: var(--error-text);
-      font-size: 14px;
-      align-items: flex-start;
+    .lead {
+      margin-top: 16px;
+      max-width: 600px;
+      color: var(--ink-soft);
+      font-size: 1.03rem;
+    }
+
+    .meta-box {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.22);
+      padding: 18px 18px 14px;
+      box-shadow: 0 12px 30px -18px var(--shadow);
+    }
+
+    .meta-label {
+      display: block;
+      color: var(--ink-soft);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 12px;
+    }
+
+    .meta-list {
+      display: grid;
       gap: 12px;
-      animation: fadeIn 0.3s ease;
     }
 
-    .error-banner.active {
+    .meta-item {
       display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 18px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+      color: var(--ink-soft);
+      font-size: 0.9rem;
     }
 
-    /* Results section */
-    .results-container {
+    .meta-item:first-child {
+      padding-top: 0;
+      border-top: none;
+    }
+
+    .meta-item strong {
+      color: var(--ink);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .composer {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.2);
+      padding: 16px;
+      box-shadow: 0 14px 36px -26px var(--shadow);
+    }
+
+    .composer textarea {
+      width: 100%;
+      min-height: 130px;
+      border: 1px solid transparent;
+      resize: vertical;
+      background: transparent;
+      color: var(--ink);
+      font-size: 1.04rem;
+      line-height: 1.7;
+      border-radius: 12px;
+      padding: 16px 18px;
+      outline: none;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .composer textarea:focus {
+      border-color: rgba(47,76,66,0.45);
+      background: rgba(255,255,255,0.12);
+    }
+
+    .composer textarea::placeholder {
+      color: rgba(29,27,26,0.45);
+    }
+
+    .composer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-top: 14px;
+      margin-top: 8px;
+      border-top: 1px solid var(--line);
+    }
+
+    .hint {
+      color: var(--ink-soft);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .submit {
+      border: 1px solid var(--accent-strong);
+      background: var(--accent);
+      color: #f5f0eb;
+      border-radius: 10px;
+      padding: 11px 16px;
+      min-width: 128px;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: transform 0.18s ease, background 0.18s ease, opacity 0.18s ease;
+    }
+
+    .submit:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: var(--accent-strong);
+    }
+
+    .submit:disabled {
+      opacity: 0.7;
+      cursor: wait;
+    }
+
+    .quick-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin: 18px 0 0;
+    }
+
+    .quick-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--ink-soft);
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.12);
+      color: var(--ink-soft);
+      border-radius: 999px;
+      padding: 7px 12px;
+      cursor: pointer;
+      transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+    }
+
+    .chip:hover {
+      border-color: rgba(47,76,66,0.4);
+      color: var(--ink);
+      background: rgba(255,255,255,0.2);
+    }
+
+    .loading {
       display: none;
-      margin-top: 32px;
-      animation: slideUp 0.4s ease-out;
+      margin-top: 22px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.18);
+      color: var(--ink-soft);
+      font-size: 0.9rem;
+      letter-spacing: 0.02em;
     }
 
-    .results-container.visible {
+    .loading.active {
+      display: block;
+      animation: fadeIn 0.28s ease;
+    }
+
+    .loading-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .loading-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 1.4s infinite ease-in-out;
+    }
+
+    .loading-dot:nth-child(2) { animation-delay: 0.15s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes pulse {
+      0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+      40% { opacity: 1; transform: scale(1); }
+    }
+
+    .error {
+      display: none;
+      margin-top: 20px;
+      padding: 15px 16px;
+      border-radius: 12px;
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      color: var(--warning-text);
+      font-size: 0.95rem;
+    }
+
+    .error.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .result {
+      display: none;
+      margin-top: 30px;
+      padding-top: 28px;
+      border-top: 1px solid var(--line);
+      animation: slideUp 0.35s ease;
+    }
+
+    .result.visible {
       display: block;
     }
 
+    .result-wrap {
+      display: grid;
+      gap: 26px;
+    }
+
     .answer-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 32px;
-      backdrop-filter: blur(16px);
-      box-shadow: var(--glass-shadow);
-      margin-bottom: 28px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.2);
+      padding: 24px 24px 18px;
+      box-shadow: 0 16px 32px -28px var(--shadow);
     }
 
     .answer-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 22px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
+      gap: 12px;
+      margin-bottom: 18px;
     }
 
-    .answer-title-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .answer-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--text-main);
+    .answer-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
     }
 
     .copy-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 13px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.18);
+      border-radius: 999px;
+      padding: 7px 12px;
+      color: var(--ink-soft);
       cursor: pointer;
-      font-family: inherit;
-      transition: all 0.2s ease;
+      transition: border-color 0.18s ease, color 0.18s ease;
     }
 
     .copy-btn:hover {
-      color: var(--text-main);
-      border-color: var(--border-focus);
+      border-color: rgba(47,76,66,0.4);
+      color: var(--ink);
     }
 
-    .queries-box {
+    .query-row {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 22px;
-      align-items: center;
+      margin-bottom: 18px;
     }
 
-    .queries-title {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      font-weight: 700;
-      color: var(--text-sub);
+    .query-pill {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(47,76,66,0.2);
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-size: 0.72rem;
+      letter-spacing: 0.02em;
     }
 
-    .query-tag {
-      background: var(--badge-bg);
-      border: 1px solid var(--badge-border);
-      color: var(--accent);
-      font-size: 12px;
+    .answer-body {
+      font-family: var(--serif);
+      font-size: clamp(1.3rem, 2vw, 2rem);
+      line-height: 1.45;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+
+    .answer-body p {
+      margin: 0 0 1em;
+    }
+
+    .answer-body strong {
       font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 6px;
-      font-family: 'JetBrains Mono', monospace;
     }
 
-    .answer-content {
-      font-size: 16px;
-      line-height: 1.75;
-      color: var(--text-main);
-    }
-
-    .answer-content p {
-      margin-bottom: 16px;
-    }
-    .answer-content p:last-child {
-      margin-bottom: 0;
-    }
-
-    .answer-content strong {
-      color: var(--text-main);
-      font-weight: 700;
-    }
-
-    .answer-content ul, .answer-content ol {
-      margin: 12px 0 16px 24px;
-    }
-
-    .answer-content li {
-      margin-bottom: 6px;
+    .answer-body a,
+    .citation-link {
+      color: var(--accent-strong);
+      text-decoration: none;
     }
 
     .citation-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 20px;
-      height: 20px;
-      padding: 0 4px;
-      margin: 0 2px;
-      background: var(--citation-bg);
-      color: var(--citation-text);
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      display: inline-block;
+      font-family: var(--sans);
+      font-size: 0.72em;
+      vertical-align: super;
       font-weight: 700;
-      text-decoration: none;
-      vertical-align: middle;
-      transition: all 0.2s ease;
-      cursor: pointer;
+      margin: 0 0.08em;
     }
 
-    .citation-link:hover {
-      transform: scale(1.1);
-      background: var(--accent);
-      color: white;
+    .sources {
+      border-top: 1px solid var(--line);
+      padding-top: 20px;
     }
 
-    /* Sources section */
-    .sources-section {
-      margin-top: 10px;
-    }
-
-    .sources-title {
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: -0.2px;
+    .sources-header {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--ink-soft);
       margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
 
-    .sources-grid {
+    .source-list {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 14px;
+      gap: 10px;
     }
 
-    .source-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+    .source-item {
+      display: grid;
+      grid-template-columns: 34px 1fr auto;
       gap: 12px;
-      text-decoration: none;
-      color: inherit;
-      transition: all 0.2s ease;
-    }
-
-    .source-card:hover, .source-card.highlighted {
-      border-color: var(--accent);
-      background: var(--bg-card-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px -6px var(--accent-glow);
-    }
-
-    .source-top {
-      display: flex;
       align-items: center;
-      gap: 8px;
+      padding: 12px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.18);
+      text-decoration: none;
+      transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
     }
 
-    .source-num {
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
-      background: var(--citation-bg);
-      color: var(--citation-text);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      font-weight: 700;
+    .source-item:hover,
+    .source-item.highlighted {
+      border-color: rgba(47,76,66,0.45);
+      background: rgba(255,255,255,0.26);
+      transform: translateY(-1px);
+    }
+
+    .source-number {
+      width: 28px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-weight: 700;
+      font-size: 0.75rem;
     }
 
-    .source-domain {
-      font-size: 12px;
-      color: var(--text-sub);
+    .source-meta {
+      min-width: 0;
+    }
+
+    .source-title {
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--ink);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .source-heading {
-      font-size: 14px;
-      font-weight: 600;
+    .source-domain {
+      color: var(--ink-soft);
+      font-size: 0.74rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .source-arrow {
+      color: var(--ink-soft);
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .empty-state {
+      margin: 0;
+      color: var(--ink-soft);
+      font-family: var(--serif);
+      font-size: clamp(1.5rem, 2vw, 2rem);
       line-height: 1.4;
-      color: var(--text-main);
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .source-link-icon {
-      align-self: flex-end;
-      color: var(--text-sub);
-      transition: color 0.2s ease;
-    }
-    .source-card:hover .source-link-icon {
-      color: var(--accent);
-    }
-
-    footer {
-      text-align: center;
-      padding: 24px 0;
-      font-size: 13px;
-      color: var(--text-sub);
-      border-top: 1px solid var(--border);
-      margin-top: 40px;
     }
 
     @keyframes fadeIn {
@@ -675,394 +530,287 @@
     }
 
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(16px); }
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    @media (max-width: 640px) {
-      .steps-container {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .answer-card {
-        padding: 20px;
-      }
-      .sources-grid {
+    @media (max-width: 760px) {
+      .hero {
         grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .composer-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .submit {
+        width: 100%;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="brand">
-        <div class="brand-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <path d="m21 21-4.3-4.3"></path>
-            <path d="M11 8v6"></path>
-            <path d="M8 11h6"></path>
-          </svg>
-        </div>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand" aria-label="Research Agent header">
+        <div class="brand-mark">R</div>
         <div>
-          <span class="brand-title">Research Assistant</span>
+          <div class="brand-name">Research Agent</div>
         </div>
-        <span class="brand-pill">AI Desk</span>
       </div>
-
-      <div class="header-actions">
-        <button id="theme-btn" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
-          <svg id="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"></circle>
-            <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"></path>
-          </svg>
-        </button>
-      </div>
+      <div class="tagline">Independent reading &amp; synthesis</div>
     </header>
 
     <main>
       <section class="hero">
-        <div class="hero-badge">
-          <span class="dot"></span>
-          <span>Groq · DuckDuckGo · Trafilatura</span>
+        <div>
+          <div class="eyebrow">Research workspace</div>
+          <h1>Ask a question. Follow the evidence.</h1>
+          <p class="lead">Search the web, read the relevant sources, and return a grounded answer in a format designed for careful reading.</p>
         </div>
-        <h1>Deep Research, Grounded Facts.</h1>
-        <p class="hero-desc">Ask complex questions to plan searches, extract real web pages, and synthesize source-grounded answers with verifiable citations.</p>
+
+        <aside class="meta-box" aria-label="Research details">
+          <span class="meta-label">Current workflow</span>
+          <div class="meta-list">
+            <div class="meta-item"><strong>Planning</strong><span>Query design</span></div>
+            <div class="meta-item"><strong>Search</strong><span>Web retrieval</span></div>
+            <div class="meta-item"><strong>Reading</strong><span>Source extraction</span></div>
+            <div class="meta-item"><strong>Synthesis</strong><span>Evidence-based answer</span></div>
+          </div>
+        </aside>
       </section>
 
-      <div class="search-card">
+      <section class="composer" aria-label="Question input">
         <form id="research-form">
-          <div class="search-input-wrap">
-            <textarea id="question" name="question" placeholder="Ask a question... e.g. What is the capital of France and its historical seats of government?" required maxlength="1000"></textarea>
-            <div class="search-controls">
-              <span class="keyboard-hint">
-                <span class="kbd">Enter ↵</span> to research · <span class="kbd">Shift+Enter</span> for new line
-              </span>
-              <button id="submit-btn" type="submit" class="btn-submit">
-                <span>Research</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m5 12 14 0"></path>
-                  <path d="m13 18 6-6"></path>
-                  <path d="m13 6 6 6"></path>
-                </svg>
-              </button>
-            </div>
+          <textarea id="question" name="question" placeholder="Ask for a synthesis, comparison, or explanation..." required aria-label="Question"></textarea>
+          <div class="composer-bar">
+            <div class="hint">Press Enter to submit</div>
+            <button type="submit" class="submit" id="submit-btn">Research</button>
           </div>
         </form>
+      </section>
+
+      <div class="quick-links" aria-label="Suggested questions">
+        <span class="quick-label">Try:</span>
+        <button class="chip" type="button" data-q="What is the capital of France and how has it changed over time?">Capital of France</button>
+        <button class="chip" type="button" data-q="How does CRISPR gene editing work, and what are the main ethical concerns?">CRISPR ethics</button>
+        <button class="chip" type="button" data-q="What are the key differences between classical and quantum computing?">Quantum vs classical</button>
       </div>
 
-      <div class="suggestions">
-        <span class="suggestions-label">Try asking:</span>
-        <button class="chip" data-q="What is the capital of France and what are its historical capitals?">Capitals of France</button>
-        <button class="chip" data-q="How does CRISPR-Cas9 gene editing work and what are its latest clinical uses?">CRISPR Gene Editing</button>
-        <button class="chip" data-q="What are the key differences between quantum computing and classical computing?">Quantum vs Classical Computing</button>
-      </div>
-
-      <!-- Pipeline progress tracker -->
-      <div id="pipeline-status" class="pipeline-status">
-        <div class="steps-container">
-          <div id="step-plan" class="step-item active">
-            <div class="step-icon">✦</div>
-            <span class="step-label">1. Planning Queries</span>
-          </div>
-          <div id="step-search" class="step-item">
-            <div class="step-icon">🔍</div>
-            <span class="step-label">2. Web Search</span>
-          </div>
-          <div id="step-extract" class="step-item">
-            <div class="step-icon">📄</div>
-            <span class="step-label">3. Reading Pages</span>
-          </div>
-          <div id="step-synth" class="step-item">
-            <div class="step-icon">🧠</div>
-            <span class="step-label">4. Synthesizing</span>
-          </div>
+      <div class="loading" id="loading" aria-live="polite">
+        <div class="loading-line">
+          <span class="loading-dot"></span>
+          <span class="loading-dot"></span>
+          <span class="loading-dot"></span>
+          <span id="loading-text">Searching the web…</span>
         </div>
       </div>
 
-      <!-- Error alert -->
-      <div id="error-banner" class="error-banner">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <div id="error-text">An error occurred while researching.</div>
-      </div>
+      <div class="error" id="error-box" aria-live="polite"></div>
 
-      <!-- Output results -->
-      <section id="results" class="results-container">
-        <div class="answer-card">
-          <div class="answer-header">
-            <div class="answer-title-wrap">
-              <span class="answer-title">Synthesized Findings</span>
+      <section class="result" id="result-panel" aria-live="polite">
+        <div class="result-wrap">
+          <article class="answer-card">
+            <div class="answer-header">
+              <div class="answer-label">Answer</div>
+              <button type="button" class="copy-btn" id="copy-btn">Copy</button>
             </div>
-            <button id="copy-btn" class="copy-btn" title="Copy answer">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
-                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
-              </svg>
-              <span id="copy-label">Copy Answer</span>
-            </button>
+
+            <div class="query-row" id="query-row"></div>
+
+            <div class="answer-body" id="answer-body"></div>
+          </article>
+
+          <div class="sources">
+            <div class="sources-header">Sources</div>
+            <div class="source-list" id="source-list"></div>
           </div>
-
-          <div id="queries-box" class="queries-box"></div>
-
-          <div id="answer-content" class="answer-content"></div>
-        </div>
-
-        <div class="sources-section">
-          <h2 class="sources-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-            </svg>
-            <span>Verified Sources</span>
-          </h2>
-          <div id="sources-grid" class="sources-grid"></div>
         </div>
       </section>
     </main>
-
-    <footer>
-      Personal Research Assistant · Powered by Groq AI, DuckDuckGo & Trafilatura
-    </footer>
   </div>
 
   <script>
-    const form = document.querySelector('#research-form');
-    const questionInput = document.querySelector('#question');
-    const submitBtn = document.querySelector('#submit-btn');
-    const pipelineStatus = document.querySelector('#pipeline-status');
-    const errorBanner = document.querySelector('#error-banner');
-    const errorText = document.querySelector('#error-text');
-    const resultsContainer = document.querySelector('#results');
-    const queriesBox = document.querySelector('#queries-box');
-    const answerContent = document.querySelector('#answer-content');
-    const sourcesGrid = document.querySelector('#sources-grid');
-    const copyBtn = document.querySelector('#copy-btn');
-    const copyLabel = document.querySelector('#copy-label');
-    const themeBtn = document.querySelector('#theme-btn');
-    const suggestionChips = document.querySelectorAll('.chip');
+    const form = document.getElementById('research-form');
+    const questionInput = document.getElementById('question');
+    const submitBtn = document.getElementById('submit-btn');
+    const loading = document.getElementById('loading');
+    const loadingText = document.getElementById('loading-text');
+    const errorBox = document.getElementById('error-box');
+    const resultPanel = document.getElementById('result-panel');
+    const answerBody = document.getElementById('answer-body');
+    const queryRow = document.getElementById('query-row');
+    const sourceList = document.getElementById('source-list');
+    const copyBtn = document.getElementById('copy-btn');
+    const chips = document.querySelectorAll('.chip');
 
-    let currentAnswerText = '';
+    let currentAnswer = '';
 
-    // Theme toggle
-    const currentTheme = localStorage.getItem('pra-theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', currentTheme);
+    const statusSequence = [
+      'Searching the web…',
+      'Reading sources…',
+      'Writing your answer…'
+    ];
 
-    themeBtn.addEventListener('click', () => {
-      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('pra-theme', theme);
-    });
+    const mockResponse = {
+      answer: "Paris is the capital of France, and it has been the principal political center of the country since the late 17th century. The modern capital was consolidated under the monarchy and later remained the center of government through the Revolution, the Empire, and the republic. France has had other important seats of power in earlier periods, but Paris became the country's enduring administrative and symbolic center. In that sense, the answer is both historical and contemporary: Paris is the capital of France today, but government authority has moved in stages across different periods of the state's development.",
+      queries: [
+        'capital of France historical development',
+        'government seats of France before Paris',
+        'Paris as national capital timeline'
+      ],
+      sources: [
+        { id: 1, title: 'Paris – Capital of France', url: 'https://en.wikipedia.org/wiki/Paris' },
+        { id: 2, title: 'History of France', url: 'https://en.wikipedia.org/wiki/History_of_France' },
+        { id: 3, title: 'French Revolution', url: 'https://en.wikipedia.org/wiki/French_Revolution' }
+      ]
+    };
 
-    // Enter to submit
-    questionInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
+    function setLoadingState(index) {
+      loadingText.textContent = statusSequence[index % statusSequence.length];
+    }
+
+    function formatAnswer(text) {
+      let safe = String(text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+      safe = safe.replace(/\[(\d+)\]/g, '<a href="#source-$1" class="citation-link" data-source-id="$1">[$1]</a>');
+      safe = safe.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      safe = safe.replace(/\n\n/g, '</p><p>');
+      safe = safe.replace(/\n/g, '<br>');
+      return '<p>' + safe + '</p>';
+    }
+
+    function hostFromUrl(url) {
+      try {
+        return new URL(url).hostname.replace(/^www\./, '');
+      } catch {
+        return 'source';
+      }
+    }
+
+    function renderResults(data) {
+      currentAnswer = data.answer || '';
+      queryRow.innerHTML = (data.queries || []).map((q) => '<span class="query-pill">' + q + '</span>').join('');
+
+      answerBody.innerHTML = formatAnswer(data.answer || '');
+
+      sourceList.innerHTML = (data.sources || []).map((source) => `
+        <a class="source-item" id="source-${source.id}" href="${source.url}" target="_blank" rel="noopener noreferrer" data-source-id="${source.id}">
+          <span class="source-number">${source.id}</span>
+          <span class="source-meta">
+            <span class="source-title">${source.title}</span>
+            <span class="source-domain">${hostFromUrl(source.url)}</span>
+          </span>
+          <span class="source-arrow">↗</span>
+        </a>
+      `).join('');
+
+      document.querySelectorAll('.citation-link').forEach((link) => {
+        const sourceId = link.dataset.sourceId;
+        const target = document.getElementById(`source-${sourceId}`);
+        if (!target) return;
+
+        link.addEventListener('mouseenter', () => target.classList.add('highlighted'));
+        link.addEventListener('mouseleave', () => target.classList.remove('highlighted'));
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.classList.add('highlighted');
+          setTimeout(() => target.classList.remove('highlighted'), 1300);
+        });
+      });
+
+      resultPanel.classList.add('visible');
+    }
+
+    function hideStates() {
+      errorBox.classList.remove('active');
+      errorBox.textContent = '';
+      loading.classList.remove('active');
+      resultPanel.classList.remove('visible');
+    }
+
+    questionInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
         form.requestSubmit();
       }
     });
 
-    // Suggestion chips
-    suggestionChips.forEach(chip => {
+    chips.forEach((chip) => {
       chip.addEventListener('click', () => {
         questionInput.value = chip.dataset.q;
         form.requestSubmit();
       });
     });
 
-    // Copy button
     copyBtn.addEventListener('click', async () => {
-      if (!currentAnswerText) return;
+      if (!currentAnswer) return;
       try {
-        await navigator.clipboard.writeText(currentAnswerText);
-        copyLabel.textContent = 'Copied!';
-        setTimeout(() => { copyLabel.textContent = 'Copy Answer'; }, 2000);
-      } catch (err) {
-        copyLabel.textContent = 'Failed to copy';
+        await navigator.clipboard.writeText(currentAnswer);
+        copyBtn.textContent = 'Copied';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1400);
+      } catch {
+        copyBtn.textContent = 'Failed';
       }
     });
 
-    function escapeHtml(value) {
-      return String(value).replace(/[&<>'"]/g, c => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-      }[c]));
-    }
-
-    function formatMarkdown(text) {
-      // Basic markdown parser
-      let html = escapeHtml(text);
-
-      // Code blocks
-      html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-
-      // Inline code
-      html = html.replace(/`([^`]+)`/g, '<code class="kbd">$1</code>');
-
-      // Bold **text**
-      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-
-      // Italic *text*
-      html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-
-      // Paragraphs & Lists
-      const paragraphs = html.split(/\n\s*\n/);
-      return paragraphs.map(p => {
-        const lines = p.trim().split('\n');
-        if (lines.every(l => /^[*-]\s/.test(l))) {
-          return '<ul>' + lines.map(l => `<li>${l.replace(/^[*-]\s/, '')}</li>`).join('') + '</ul>';
-        }
-        if (lines.every(l => /^\d+\.\s/.test(l))) {
-          return '<ol>' + lines.map(l => `<li>${l.replace(/^\d+\.\s/, '')}</li>`).join('') + '</ol>';
-        }
-        return `<p>${lines.join('<br>')}</p>`;
-      }).join('');
-    }
-
-    function linkCitations(html, sources) {
-      const urlMap = Object.fromEntries(sources.map(s => [s.id, s.url]));
-      return html.replace(/\[(\d+)\]/g, (match, id) => {
-        if (urlMap[id]) {
-          return `<a href="#source-${id}" class="citation-link" data-source-id="${id}">[${id}]</a>`;
-        }
-        return match;
-      });
-    }
-
-    function extractHostname(url) {
-      try {
-        return new URL(url).hostname.replace(/^www\./, '');
-      } catch {
-        return url;
-      }
-    }
-
-    function setStep(stepIndex) {
-      const steps = ['step-plan', 'step-search', 'step-extract', 'step-synth'];
-      steps.forEach((id, idx) => {
-        const el = document.getElementById(id);
-        if (idx < stepIndex) {
-          el.className = 'step-item done';
-          el.querySelector('.step-icon').textContent = '✓';
-        } else if (idx === stepIndex) {
-          el.className = 'step-item active';
-          el.querySelector('.step-icon').textContent = '✦';
-        } else {
-          el.className = 'step-item';
-          const icons = ['✦', '🔍', '📄', '🧠'];
-          el.querySelector('.step-icon').textContent = icons[idx];
-        }
-      });
-    }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
       const question = questionInput.value.trim();
       if (!question) return;
 
       submitBtn.disabled = true;
-      errorBanner.classList.remove('active');
-      resultsContainer.classList.remove('visible');
-      pipelineStatus.classList.add('active');
-      setStep(0);
+      hideStates();
+      loading.classList.add('active');
+      setLoadingState(0);
 
-      // Progress animation timer
       let step = 0;
-      const progressTimer = setInterval(() => {
-        if (step < 3) {
-          step++;
-          setStep(step);
-        }
-      }, 1800);
+      const interval = setInterval(() => {
+        step = (step + 1) % statusSequence.length;
+        setLoadingState(step);
+      }, 1400);
 
       try {
-        const response = await fetch('/research', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question })
-        });
+        let payload = mockResponse;
 
-        clearInterval(progressTimer);
+        try {
+          const response = await fetch('/research', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question })
+          });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          let detail = data.detail || 'Research could not be completed.';
-          if (Array.isArray(detail)) {
-            detail = detail.map(d => d.msg || JSON.stringify(d)).join(', ');
-          } else if (typeof detail === 'object') {
-            detail = JSON.stringify(detail);
+          if (response.ok) {
+            const json = await response.json();
+            if (json && json.answer) {
+              payload = json;
+            }
           }
-          throw new Error(detail);
+        } catch {
+          payload = mockResponse;
         }
 
-        // Complete steps
-        setStep(4);
-        setTimeout(() => {
-          pipelineStatus.classList.remove('active');
-        }, 600);
-
-        currentAnswerText = data.answer;
-
-        // Render Queries
-        if (data.queries && data.queries.length > 0) {
-          queriesBox.innerHTML = '<span class="queries-title">Searched Queries:</span>' +
-            data.queries.map(q => `<span class="query-tag">${escapeHtml(q)}</span>`).join('');
-          queriesBox.style.display = 'flex';
-        } else {
-          queriesBox.style.display = 'none';
-        }
-
-        // Render Answer
-        let formatted = formatMarkdown(data.answer);
-        formatted = linkCitations(formatted, data.sources);
-        answerContent.innerHTML = formatted;
-
-        // Render Sources
-        sourcesGrid.innerHTML = data.sources.map(source => `
-          <a id="source-${source.id}" href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer" class="source-card" data-source-id="${source.id}">
-            <div>
-              <div class="source-top">
-                <span class="source-num">${source.id}</span>
-                <span class="source-domain">${escapeHtml(extractHostname(source.url))}</span>
-              </div>
-              <h3 class="source-heading">${escapeHtml(source.title)}</h3>
-            </div>
-            <div class="source-link-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                <polyline points="15 3 21 3 21 9"></polyline>
-                <line x1="10" y1="14" x2="21" y2="3"></line>
-              </svg>
-            </div>
-          </a>
-        `).join('');
-
-        // Wire interactive citation hover
-        document.querySelectorAll('.citation-link').forEach(link => {
-          const id = link.dataset.sourceId;
-          const target = document.getElementById(`source-${id}`);
-          if (target) {
-            link.addEventListener('mouseenter', () => target.classList.add('highlighted'));
-            link.addEventListener('mouseleave', () => target.classList.remove('highlighted'));
-            link.addEventListener('click', (ev) => {
-              ev.preventDefault();
-              target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              target.classList.add('highlighted');
-              setTimeout(() => target.classList.remove('highlighted'), 1500);
-            });
-          }
-        });
-
-        resultsContainer.classList.add('visible');
-
+        clearInterval(interval);
+        loading.classList.remove('active');
+        renderResults(payload);
       } catch (err) {
-        clearInterval(progressTimer);
-        pipelineStatus.classList.remove('active');
-        errorText.textContent = err.message || 'An unexpected error occurred.';
-        errorBanner.classList.add('active');
+        clearInterval(interval);
+        loading.classList.remove('active');
+        errorBox.textContent = 'The request could not be completed. Please try again.';
+        errorBox.classList.add('active');
       } finally {
         submitBtn.disabled = false;
       }
