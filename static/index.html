@@ -367,6 +367,15 @@
       margin-bottom: 18px;
     }
 
+    .result-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .export-question {
+      display: none;
+    }
+
     .answer-label {
       font-size: 0.72rem;
       letter-spacing: 0.12em;
@@ -374,7 +383,8 @@
       color: var(--ink-soft);
     }
 
-    .copy-btn {
+    .copy-btn,
+    .export-btn {
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.18);
       border-radius: 999px;
@@ -384,7 +394,8 @@
       transition: border-color 0.18s ease, color 0.18s ease;
     }
 
-    .copy-btn:hover {
+    .copy-btn:hover,
+    .export-btn:hover {
       border-color: rgba(47,76,66,0.4);
       color: var(--ink);
     }
@@ -510,6 +521,10 @@
       margin-top: 2px;
     }
 
+    .source-url {
+      display: none;
+    }
+
     .source-arrow {
       color: var(--ink-soft);
       font-size: 1.1rem;
@@ -552,6 +567,132 @@
 
       .submit {
         width: 100%;
+      }
+    }
+
+    @page {
+      size: A4;
+      margin: 18mm;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #1d1b1a;
+        font-family: Georgia, serif;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .page {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .topbar,
+      .hero,
+      .composer,
+      .quick-links,
+      .loading,
+      .error,
+      .answer-header,
+      .query-row {
+        display: none !important;
+      }
+
+      .result,
+      .result.visible {
+        display: block !important;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        animation: none;
+      }
+
+      .result-wrap {
+        gap: 24px;
+      }
+
+      .export-question {
+        display: block;
+        margin-bottom: 22px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #b9b2a9;
+      }
+
+      .export-question-label,
+      .answer-label,
+      .sources-header {
+        color: #5f5650;
+        font-family: Arial, sans-serif;
+        font-size: 9pt;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .export-question-text {
+        margin: 6px 0 0;
+        font-size: 16pt;
+        line-height: 1.35;
+      }
+
+      .answer-card {
+        padding: 0;
+        border: 0;
+        background: none;
+        box-shadow: none;
+      }
+
+      .answer-body {
+        font-size: 13pt;
+        line-height: 1.55;
+      }
+
+      .sources {
+        border-top: 1px solid #b9b2a9;
+        padding-top: 12px;
+      }
+
+      .source-list {
+        gap: 8px;
+      }
+
+      .source-item {
+        grid-template-columns: 28px 1fr;
+        padding: 8px 0;
+        border: 0;
+        border-bottom: 1px solid #ded9d2;
+        border-radius: 0;
+        background: none;
+        break-inside: avoid;
+      }
+
+      .source-number {
+        background: none;
+        border: 1px solid #b9b2a9;
+      }
+
+      .source-title {
+        white-space: normal;
+      }
+
+      .source-url {
+        display: block;
+        margin-top: 3px;
+        color: #5f5650;
+        font-family: Arial, sans-serif;
+        font-size: 8pt;
+        overflow-wrap: anywhere;
+      }
+
+      .source-arrow {
+        display: none;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
       }
     }
   </style>
@@ -618,9 +759,16 @@
       <section class="result" id="result-panel" aria-live="polite">
         <div class="result-wrap">
           <article class="answer-card">
+            <div class="export-question">
+              <div class="export-question-label">Research question</div>
+              <p class="export-question-text" id="export-question-text"></p>
+            </div>
             <div class="answer-header">
               <div class="answer-label">Answer</div>
-              <button type="button" class="copy-btn" id="copy-btn">Copy</button>
+              <div class="result-actions">
+                <button type="button" class="copy-btn" id="copy-btn">Copy</button>
+                <button type="button" class="export-btn" id="export-btn">Export PDF</button>
+              </div>
             </div>
 
             <div class="query-row" id="query-row"></div>
@@ -646,12 +794,15 @@
     const errorBox = document.getElementById('error-box');
     const resultPanel = document.getElementById('result-panel');
     const answerBody = document.getElementById('answer-body');
+    const exportQuestionText = document.getElementById('export-question-text');
     const queryRow = document.getElementById('query-row');
     const sourceList = document.getElementById('source-list');
     const copyBtn = document.getElementById('copy-btn');
+    const exportBtn = document.getElementById('export-btn');
     const chips = document.querySelectorAll('.chip');
 
     let currentAnswer = '';
+    let currentQuestion = '';
 
     const statusSequence = [
       'Searching the web…',
@@ -702,6 +853,7 @@
 
     function renderResults(data) {
       currentAnswer = data.answer || '';
+      exportQuestionText.textContent = currentQuestion;
       queryRow.innerHTML = (data.queries || []).map((q) => '<span class="query-pill">' + q + '</span>').join('');
 
       answerBody.innerHTML = formatAnswer(data.answer || '');
@@ -712,6 +864,7 @@
           <span class="source-meta">
             <span class="source-title">${source.title}</span>
             <span class="source-domain">${hostFromUrl(source.url)}</span>
+            <span class="source-url">${source.url}</span>
           </span>
           <span class="source-arrow">↗</span>
         </a>
@@ -767,10 +920,13 @@
       }
     });
 
+    exportBtn.addEventListener('click', () => window.print());
+
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const question = questionInput.value.trim();
       if (!question) return;
+      currentQuestion = question;
 
       submitBtn.disabled = true;
       hideStates();
