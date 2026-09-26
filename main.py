@@ -69,32 +69,32 @@ def export_pdf(request: PdfExportRequest) -> Response:
         leftMargin=0.78 * inch,
         topMargin=0.8 * inch,
         bottomMargin=0.72 * inch,
-        title="Fieldnote research answer",
-        author="Fieldnote",
+        title="Adwaith research answer",
+        author="Adwaith",
     )
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle(
-        "FieldnoteTitle", parent=styles["Title"], alignment=TA_LEFT,
+        "AdwaithTitle", parent=styles["Title"], alignment=TA_LEFT,
         textColor=colors.HexColor("#202723"), fontName="Helvetica-Bold",
         fontSize=20, leading=25, spaceAfter=16,
     )
     label_style = ParagraphStyle(
-        "FieldnoteLabel", parent=styles["Heading3"], textColor=colors.HexColor("#397768"),
+        "AdwaithLabel", parent=styles["Heading3"], textColor=colors.HexColor("#397768"),
         fontName="Helvetica-Bold", fontSize=9, leading=12, spaceBefore=10, spaceAfter=5,
     )
     body_style = ParagraphStyle(
-        "FieldnoteBody", parent=styles["BodyText"], textColor=colors.HexColor("#202723"),
+        "AdwaithBody", parent=styles["BodyText"], textColor=colors.HexColor("#202723"),
         fontName="Helvetica", fontSize=10.5, leading=16, spaceAfter=8,
     )
     source_style = ParagraphStyle(
-        "FieldnoteSource", parent=body_style, fontSize=9, leading=13, spaceAfter=6,
+        "AdwaithSource", parent=body_style, fontSize=9, leading=13, spaceAfter=6,
     )
 
     def pdf_text(value: str) -> str:
         return value.encode("cp1252", "replace").decode("cp1252")
 
     story = [
-        Paragraph("Fieldnote", title_style),
+        Paragraph("Adwaith", title_style),
         Paragraph("QUESTION", label_style),
         Paragraph(escape(pdf_text(request.question)), body_style),
         Paragraph("ANSWER", label_style),
@@ -122,14 +122,14 @@ def export_pdf(request: PdfExportRequest) -> Response:
         canvas.saveState()
         canvas.setFont("Helvetica", 8)
         canvas.setFillColor(colors.HexColor("#69736d"))
-        canvas.drawRightString(letter[0] - 0.78 * inch, 0.42 * inch, f"Fieldnote  ·  {_document.page}")
+        canvas.drawRightString(letter[0] - 0.78 * inch, 0.42 * inch, f"Adwaith  ·  {_document.page}")
         canvas.restoreState()
 
     document.build(story, onFirstPage=add_page_number, onLaterPages=add_page_number)
     return Response(
         content=buffer.getvalue(),
         media_type="application/pdf",
-        headers={"Content-Disposition": 'attachment; filename="fieldnote-answer.pdf"'},
+        headers={"Content-Disposition": 'attachment; filename="adwaith-answer.pdf"'},
     )
 
 

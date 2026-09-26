@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f5f6f3">
-  <title>Fieldnote | Research chat</title>
+  <title>Adwaith | Research chat</title>
   <meta name="description" content="A source-grounded research assistant for exploring questions across the web.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -132,7 +132,7 @@
 <body>
   <div class="app">
     <aside class="sidebar" aria-label="Research navigation">
-      <div class="brand"><div class="brand-mark" aria-hidden="true">f</div><div><div class="brand-name">Fieldnote</div><div class="brand-caption">Research, with receipts</div></div></div>
+      <div class="brand"><div class="brand-mark" aria-hidden="true">A</div><div><div class="brand-name">Adwaith</div><div class="brand-caption">Research, with receipts</div></div></div>
       <button class="new-chat" id="new-chat" type="button"><span class="new-chat-icon" aria-hidden="true">+</span><span>New research</span></button>
       <section class="side-section" aria-label="Current conversation"><h2 class="side-section-label">This session</h2><div class="thread-link active" id="thread-title">New conversation</div></section>
       <div class="sidebar-spacer"></div>
@@ -181,7 +181,7 @@
         </section>
         <div class="composer-area">
           <form class="composer" id="chat-form">
-            <textarea id="chat-question" name="question" rows="1" maxlength="1000" placeholder="Message Fieldnote..." aria-label="Chat message" required></textarea>
+            <textarea id="chat-question" name="question" rows="1" maxlength="1000" placeholder="Message Adwaith..." aria-label="Chat message" required></textarea>
             <div class="composer-controls"><span class="composer-hint">Enter to send · Shift + Enter for a new line</span><button class="send-button" type="submit" aria-label="Send chat message" title="Send message">↑</button></div>
           </form>
           <p class="disclaimer">Responses may be inaccurate; verify important details.</p>
@@ -336,7 +336,7 @@
           const fileUrl = URL.createObjectURL(await response.blob());
           const link = document.createElement('a');
           link.href = fileUrl;
-          link.download = 'fieldnote-answer.pdf';
+          link.download = 'adwaith-answer.pdf';
           document.body.append(link);
           link.click();
           link.remove();
@@ -366,7 +366,7 @@
       }
       const userMessage = addMessage('user', 'You', state.messages);
       const userText = document.createElement('div'); userText.className = 'user-text'; userText.textContent = trimmed; userMessage.content.append(userText);
-      const assistantMessage = addMessage('assistant', 'Fieldnote', state.messages);
+      const assistantMessage = addMessage('assistant', 'Adwaith', state.messages);
       assistantMessage.article.hidden = true;
       state.sendButton.disabled = true; state.questionInput.disabled = true; state.questionInput.value = ''; state.questionInput.style.height = 'auto';
       try {
