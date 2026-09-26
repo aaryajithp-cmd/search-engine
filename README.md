@@ -1,6 +1,6 @@
 # Personal Research Assistant
 
-A small FastAPI app that plans searches with Groq, finds real web pages through DuckDuckGo, extracts readable text with Trafilatura, and returns a source-grounded answer with inline citations.
+A small FastAPI app with two assistant modes: conversational answers through Groq, or web research that plans searches, finds pages through DuckDuckGo, extracts readable text with Trafilatura, and returns a source-grounded answer with inline citations.
 
 ## Setup
 
@@ -35,6 +35,12 @@ A small FastAPI app that plans searches with Groq, finds real web pages through 
 - `GROQ_API_KEY`: required for query planning and synthesis.
 - Search uses DuckDuckGo without an API key.
 - Page requests use a 10-second timeout and the pipeline caps extraction at five pages per question.
+
+## Modes
+
+- **Web search**: researches the question online and returns cited sources.
+- **Normal chat**: answers conversationally with chat history and no web retrieval.
+- Answers can be downloaded as PDFs with the question and source links included.
 
 ## Project layout
 

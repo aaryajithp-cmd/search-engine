@@ -1,975 +1,421 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Research Agent</title>
-  <meta name="description" content="Research Agent: source-grounded answers with a clean editorial interface.">
+  <meta name="theme-color" content="#f5f6f3">
+  <title>Fieldnote | Research chat</title>
+  <meta name="description" content="A source-grounded research assistant for exploring questions across the web.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --paper: #f1ece4;
-      --paper-deep: #e8e0d2;
-      --panel: rgba(255,255,255,0.42);
-      --panel-strong: rgba(255,255,255,0.72);
-      --ink: #1d1b1a;
-      --ink-soft: #5f5650;
-      --line: rgba(29,27,26,0.12);
-      --line-strong: rgba(29,27,26,0.2);
-      --accent: #2f4c42;
-      --accent-soft: rgba(47,76,66,0.1);
-      --accent-strong: #223a33;
-      --shadow: rgba(29,27,26,0.08);
-      --warning-bg: #f5efe7;
-      --warning-border: rgba(29,27,26,0.14);
-      --warning-text: #4a433f;
-      --sans: 'Inter', 'Segoe UI', sans-serif;
-      --serif: 'Cormorant Garamond', Georgia, serif;
+      color-scheme: light;
+      --canvas: #f5f6f3; --surface: #fff; --surface-muted: #ecefeb;
+      --ink: #202723; --ink-soft: #69736d; --line: #e1e6e1;
+      --sidebar: #202925; --sidebar-soft: #a8b2ac;
+      --accent: #c65e42; --accent-dark: #a94931;
+      --green: #397768; --green-soft: #e8f1ed; --warning: #fff0e9;
+      --sans: 'DM Sans', 'Segoe UI', sans-serif; --display: 'Fraunces', Georgia, serif;
     }
-
     * { box-sizing: border-box; }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.02)),
-        var(--paper);
-      color: var(--ink);
-      font-family: var(--sans);
-      line-height: 1.6;
-    }
-
-    a { color: inherit; }
-    button, textarea { font: inherit; }
-
-    .page {
-      width: min(1040px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 28px 0 48px;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-bottom: 18px;
-      border-bottom: 1px solid var(--line);
-      margin-bottom: 42px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .brand-mark {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 1px solid var(--line-strong);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      color: var(--accent-strong);
-      background: rgba(255,255,255,0.18);
-    }
-
-    .brand-name {
-      font-family: var(--serif);
-      font-size: clamp(2rem, 2vw, 2.5rem);
-      line-height: 1;
-      font-weight: 600;
-      letter-spacing: -0.04em;
-    }
-
-    .tagline {
-      color: var(--ink-soft);
-      font-size: 0.75rem;
-      letter-spacing: 0.13em;
-      text-transform: uppercase;
-      margin-left: 8px;
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 28px;
-      align-items: end;
-      margin-bottom: 28px;
-    }
-
-    .eyebrow {
-      display: inline-block;
-      margin-bottom: 10px;
-      color: var(--ink-soft);
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      font-size: 0.7rem;
-      font-weight: 600;
-    }
-
-    h1 {
-      margin: 0;
-      font-family: var(--serif);
-      font-weight: 600;
-      font-size: clamp(3.3rem, 5vw, 5rem);
-      line-height: 0.9;
-      letter-spacing: -0.05em;
-      max-width: 560px;
-    }
-
-    .lead {
-      margin-top: 16px;
-      max-width: 600px;
-      color: var(--ink-soft);
-      font-size: 1.03rem;
-    }
-
-    .meta-box {
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255,255,255,0.22);
-      padding: 18px 18px 14px;
-      box-shadow: 0 12px 30px -18px var(--shadow);
-    }
-
-    .meta-label {
-      display: block;
-      color: var(--ink-soft);
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      margin-bottom: 12px;
-    }
-
-    .meta-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .meta-item {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 18px;
-      padding-top: 10px;
-      border-top: 1px solid var(--line);
-      color: var(--ink-soft);
-      font-size: 0.9rem;
-    }
-
-    .meta-item:first-child {
-      padding-top: 0;
-      border-top: none;
-    }
-
-    .meta-item strong {
-      color: var(--ink);
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-
-    .composer {
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255,255,255,0.2);
-      padding: 16px;
-      box-shadow: 0 14px 36px -26px var(--shadow);
-    }
-
-    .composer textarea {
-      width: 100%;
-      min-height: 130px;
-      border: 1px solid transparent;
-      resize: vertical;
-      background: transparent;
-      color: var(--ink);
-      font-size: 1.04rem;
-      line-height: 1.7;
-      border-radius: 12px;
-      padding: 16px 18px;
-      outline: none;
-      transition: border-color 0.2s ease, background 0.2s ease;
-    }
-
-    .composer textarea:focus {
-      border-color: rgba(47,76,66,0.45);
-      background: rgba(255,255,255,0.12);
-    }
-
-    .composer textarea::placeholder {
-      color: rgba(29,27,26,0.45);
-    }
-
-    .composer-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding-top: 14px;
-      margin-top: 8px;
-      border-top: 1px solid var(--line);
-    }
-
-    .hint {
-      color: var(--ink-soft);
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .submit {
-      border: 1px solid var(--accent-strong);
-      background: var(--accent);
-      color: #f5f0eb;
-      border-radius: 10px;
-      padding: 11px 16px;
-      min-width: 128px;
-      cursor: pointer;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-      transition: transform 0.18s ease, background 0.18s ease, opacity 0.18s ease;
-    }
-
-    .submit:hover:not(:disabled) {
-      transform: translateY(-1px);
-      background: var(--accent-strong);
-    }
-
-    .submit:disabled {
-      opacity: 0.7;
-      cursor: wait;
-    }
-
-    .quick-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      margin: 18px 0 0;
-    }
-
-    .quick-label {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--ink-soft);
-    }
-
-    .chip {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.12);
-      color: var(--ink-soft);
-      border-radius: 999px;
-      padding: 7px 12px;
-      cursor: pointer;
-      transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
-    }
-
-    .chip:hover {
-      border-color: rgba(47,76,66,0.4);
-      color: var(--ink);
-      background: rgba(255,255,255,0.2);
-    }
-
-    .loading {
-      display: none;
-      margin-top: 22px;
-      padding: 16px 18px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(255,255,255,0.18);
-      color: var(--ink-soft);
-      font-size: 0.9rem;
-      letter-spacing: 0.02em;
-    }
-
-    .loading.active {
-      display: block;
-      animation: fadeIn 0.28s ease;
-    }
-
-    .loading-line {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .loading-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: pulse 1.4s infinite ease-in-out;
-    }
-
-    .loading-dot:nth-child(2) { animation-delay: 0.15s; }
-    .loading-dot:nth-child(3) { animation-delay: 0.3s; }
-
-    @keyframes pulse {
-      0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
-      40% { opacity: 1; transform: scale(1); }
-    }
-
-    .error {
-      display: none;
-      margin-top: 20px;
-      padding: 15px 16px;
-      border-radius: 12px;
-      background: var(--warning-bg);
-      border: 1px solid var(--warning-border);
-      color: var(--warning-text);
-      font-size: 0.95rem;
-    }
-
-    .error.active {
-      display: block;
-      animation: fadeIn 0.25s ease;
-    }
-
-    .result {
-      display: none;
-      margin-top: 30px;
-      padding-top: 28px;
-      border-top: 1px solid var(--line);
-      animation: slideUp 0.35s ease;
-    }
-
-    .result.visible {
-      display: block;
-    }
-
-    .result-wrap {
-      display: grid;
-      gap: 26px;
-    }
-
-    .answer-card {
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255,255,255,0.2);
-      padding: 24px 24px 18px;
-      box-shadow: 0 16px 32px -28px var(--shadow);
-    }
-
-    .answer-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .result-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .export-question {
-      display: none;
-    }
-
-    .answer-label {
-      font-size: 0.72rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--ink-soft);
-    }
-
-    .copy-btn,
-    .export-btn {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.18);
-      border-radius: 999px;
-      padding: 7px 12px;
-      color: var(--ink-soft);
-      cursor: pointer;
-      transition: border-color 0.18s ease, color 0.18s ease;
-    }
-
-    .copy-btn:hover,
-    .export-btn:hover {
-      border-color: rgba(47,76,66,0.4);
-      color: var(--ink);
-    }
-
-    .query-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-
-    .query-pill {
-      display: inline-block;
-      padding: 5px 9px;
-      border-radius: 999px;
-      border: 1px solid rgba(47,76,66,0.2);
-      background: var(--accent-soft);
-      color: var(--accent-strong);
-      font-size: 0.72rem;
-      letter-spacing: 0.02em;
-    }
-
-    .answer-body {
-      font-family: var(--serif);
-      font-size: clamp(1.3rem, 2vw, 2rem);
-      line-height: 1.45;
-      letter-spacing: -0.02em;
-      color: var(--ink);
-    }
-
-    .answer-body p {
-      margin: 0 0 1em;
-    }
-
-    .answer-body strong {
-      font-weight: 600;
-    }
-
-    .answer-body a,
-    .citation-link {
-      color: var(--accent-strong);
-      text-decoration: none;
-    }
-
-    .citation-link {
-      display: inline-block;
-      font-family: var(--sans);
-      font-size: 0.72em;
-      vertical-align: super;
-      font-weight: 700;
-      margin: 0 0.08em;
-    }
-
-    .sources {
-      border-top: 1px solid var(--line);
-      padding-top: 20px;
-    }
-
-    .sources-header {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--ink-soft);
-      margin-bottom: 14px;
-    }
-
-    .source-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .source-item {
-      display: grid;
-      grid-template-columns: 34px 1fr auto;
-      gap: 12px;
-      align-items: center;
-      padding: 12px 12px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(255,255,255,0.18);
-      text-decoration: none;
-      transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
-    }
-
-    .source-item:hover,
-    .source-item.highlighted {
-      border-color: rgba(47,76,66,0.45);
-      background: rgba(255,255,255,0.26);
-      transform: translateY(-1px);
-    }
-
-    .source-number {
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      background: var(--accent-soft);
-      color: var(--accent-strong);
-      font-weight: 700;
-      font-size: 0.75rem;
-    }
-
-    .source-meta {
-      min-width: 0;
-    }
-
-    .source-title {
-      font-weight: 600;
-      line-height: 1.35;
-      color: var(--ink);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .source-domain {
-      color: var(--ink-soft);
-      font-size: 0.74rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-top: 2px;
-    }
-
-    .source-url {
-      display: none;
-    }
-
-    .source-arrow {
-      color: var(--ink-soft);
-      font-size: 1.1rem;
-      line-height: 1;
-    }
-
-    .empty-state {
-      margin: 0;
-      color: var(--ink-soft);
-      font-family: var(--serif);
-      font-size: clamp(1.5rem, 2vw, 2rem);
-      line-height: 1.4;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
+    body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--canvas); color: var(--ink); font: 15px/1.6 var(--sans); }
+    button, textarea { font: inherit; } button { color: inherit; }
+    .app { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { display: flex; flex-direction: column; gap: 30px; min-height: 100vh; padding: 25px 17px 18px; background: var(--sidebar); color: #f1f4f1; }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 8px; }
+    .brand-mark { display: grid; width: 34px; aspect-ratio: 1; place-items: center; border-radius: 10px; background: var(--accent); color: white; font: 600 19px var(--display); }
+    .brand-name { font: 500 22px/1.1 var(--display); }
+    .brand-caption { color: var(--sidebar-soft); font-size: 11px; }
+    .new-chat { display: flex; align-items: center; gap: 10px; min-height: 43px; padding: 0 12px; border: 1px solid #49534d; border-radius: 8px; background: #303a34; color: #fff; cursor: pointer; text-align: left; transition: background .18s ease, border-color .18s ease; }
+    .new-chat:hover { border-color: #849087; background: #38443d; }
+    .new-chat-icon { font-size: 20px; line-height: 1; }
+    .side-section-label { margin: 0 8px 8px; color: var(--sidebar-soft); font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .thread-link { display: block; overflow: hidden; padding: 9px 10px; border-radius: 6px; color: #d8dfda; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .thread-link.active { background: #303a34; }
+    .sidebar-spacer { flex: 1; }
+    .service-status { display: flex; align-items: center; gap: 9px; padding: 13px 10px 2px; border-top: 1px solid #3b453f; color: #d3dbd5; font-size: 12px; }
+    .status-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: #80bc99; box-shadow: 0 0 0 3px rgb(128 188 153 / 14%); }
+    .status-note { display: block; margin-left: 17px; color: var(--sidebar-soft); font-size: 11px; }
+    .main { display: flex; min-width: 0; min-height: 100vh; flex-direction: column; }
+    .topbar { display: flex; min-height: 66px; align-items: center; justify-content: space-between; gap: 16px; padding: 0 34px; border-bottom: 1px solid var(--line); background: rgb(255 255 255 / 75%); }
+    .topbar-title { font-size: 13px; font-weight: 600; }
+    .mode-switch { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-muted); }
+    .mode-button { padding: 6px 10px; border: 0; border-radius: 6px; background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .mode-button[aria-selected="true"] { background: var(--green); color: #fff; box-shadow: 0 1px 2px rgb(32 39 35 / 14%); }
+    .mode-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .workspace-tab { display: flex; min-height: calc(100vh - 66px); flex-direction: column; }
+    .workspace-tab[hidden], .welcome[hidden] { display: none; }
+    .conversation { width: min(820px, 100%); flex: 1; margin: 0 auto; padding: 42px 32px 28px; }
+    .welcome { display: flex; min-height: min(590px, calc(100vh - 230px)); flex-direction: column; justify-content: center; padding-bottom: 32px; animation: rise-in .45s ease both; }
+    .welcome-kicker { display: flex; align-items: center; gap: 9px; margin-bottom: 15px; color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .welcome-kicker::before { width: 22px; height: 1px; background: var(--green); content: ''; }
+    h1 { max-width: 580px; margin: 0; font: 500 clamp(38px, 5vw, 56px)/1.08 var(--display); letter-spacing: 0; }
+    .welcome-copy { max-width: 500px; margin: 15px 0 30px; color: var(--ink-soft); font-size: 15px; }
+    .suggestion-label { margin-bottom: 11px; color: var(--ink-soft); font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+    .suggestions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-width: 660px; }
+    .suggestion { min-height: 70px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); cursor: pointer; text-align: left; transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease; }
+    .suggestion:hover { transform: translateY(-2px); border-color: #b5c6bd; box-shadow: 0 7px 20px rgb(32 39 35 / 5%); }
+    .suggestion span { display: block; font-weight: 600; font-size: 13px; }
+    .suggestion small { display: block; margin-top: 3px; color: var(--ink-soft); font-size: 11px; }
+    .messages { display: grid; gap: 30px; }
+    .message { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 13px; animation: rise-in .3s ease both; }
+    .message[hidden] { display: none; }
+    .avatar { display: grid; width: 32px; aspect-ratio: 1; place-items: center; border-radius: 9px; background: var(--surface-muted); color: var(--ink-soft); font-size: 11px; font-weight: 700; }
+    .message.assistant .avatar { background: var(--green-soft); color: var(--green); font: 600 16px var(--display); }
+    .message-content { min-width: 0; padding-top: 2px; }
+    .message-label { margin-bottom: 5px; color: var(--ink-soft); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+    .user-text { display: inline-block; max-width: 100%; padding: 10px 14px; border: 1px solid #e6e9e5; border-radius: 4px 12px 12px 12px; background: #ecefeb; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .answer-body { font-size: 14px; line-height: 1.75; overflow-wrap: anywhere; }
+    .answer-body p { margin: 0 0 12px; } .answer-body p:last-child { margin-bottom: 0; }
+    .answer-body strong { font-weight: 700; }
+    .citation-link { padding: 0 2px; color: var(--green); font-size: 11px; font-weight: 700; text-decoration: none; vertical-align: super; }
+    .citation-link:hover { color: var(--accent-dark); text-decoration: underline; }
+    .answer-actions { display: flex; gap: 7px; margin-top: 13px; }
+    .text-action { padding: 4px 7px; border: 0; border-radius: 5px; background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 11px; }
+    .text-action:hover { background: var(--surface-muted); color: var(--ink); }
+    .source-block { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .source-heading { margin-bottom: 8px; color: var(--ink-soft); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .source-list { display: grid; gap: 6px; }
+    .source-item { display: grid; grid-template-columns: 24px minmax(0, 1fr) 16px; align-items: center; gap: 9px; padding: 7px 8px; border: 1px solid transparent; border-radius: 6px; color: inherit; text-decoration: none; transition: border-color .16s ease, background .16s ease; }
+    .source-item:hover, .source-item.highlighted { border-color: #ccddd5; background: #f5f8f5; }
+    .source-number { display: grid; width: 22px; aspect-ratio: 1; place-items: center; border-radius: 5px; background: var(--green-soft); color: var(--green); font-size: 10px; font-weight: 700; }
+    .source-meta { min-width: 0; }
+    .source-title { display: block; overflow: hidden; font-size: 12px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+    .source-domain { display: block; color: var(--ink-soft); font-size: 10px; }
+    .source-arrow { color: var(--ink-soft); font-size: 13px; }
+    .error-message { padding: 10px 12px; border: 1px solid #efd4c9; border-radius: 7px; background: var(--warning); color: #773d2c; font-size: 13px; }
+    .composer-area { position: sticky; bottom: 0; z-index: 2; width: min(820px, 100%); margin: 0 auto; padding: 12px 32px 20px; background: linear-gradient(180deg, rgb(245 246 243 / 0%), var(--canvas) 22%); }
+    .composer { padding: 11px 12px 9px 15px; border: 1px solid #d7ded8; border-radius: 11px; background: var(--surface); box-shadow: 0 10px 30px rgb(32 39 35 / 7%); transition: border-color .18s ease, box-shadow .18s ease; }
+    .composer:focus-within { border-color: #8bab9d; box-shadow: 0 10px 30px rgb(32 39 35 / 8%), 0 0 0 3px rgb(57 119 104 / 8%); }
+    .composer textarea { display: block; width: 100%; min-height: 30px; max-height: 180px; resize: none; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 14px; line-height: 1.5; }
+    .composer textarea::placeholder { color: #929b95; }
+    .composer-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 7px; }
+    .composer-hint { color: #89928c; font-size: 10px; }
+    .send-button { display: grid; width: 34px; aspect-ratio: 1; place-items: center; border: 0; border-radius: 7px; background: var(--accent); color: white; cursor: pointer; font-size: 19px; line-height: 1; transition: background .18s ease, opacity .18s ease; }
+    .send-button:hover:not(:disabled) { background: var(--accent-dark); }
+    .send-button:disabled { opacity: .48; cursor: wait; }
+    .disclaimer { margin: 7px 0 0; color: #89928c; font-size: 10px; text-align: center; }
+    @keyframes rise-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @media (max-width: 760px) {
-      .hero {
-        grid-template-columns: 1fr;
-      }
-
-      .topbar {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 14px;
-      }
-
-      .composer-bar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .submit {
-        width: 100%;
-      }
+      .app { grid-template-columns: 1fr; }
+      .sidebar { min-height: auto; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; }
+      .brand { gap: 8px; padding: 0; } .brand-mark { width: 30px; border-radius: 8px; } .brand-name { font-size: 19px; }
+      .brand-caption, .side-section, .sidebar-spacer, .service-status { display: none; }
+      .new-chat { min-height: 36px; padding: 0 10px; font-size: 12px; } .new-chat-icon { font-size: 17px; }
+      .topbar { min-height: 48px; padding: 0 17px; }
+      .mode-button { padding: 5px 8px; font-size: 10px; }
+      .workspace-tab { min-height: calc(100vh - 98px); }
+      .conversation { padding: 30px 18px 22px; }
+      .welcome { min-height: min(540px, calc(100dvh - 220px)); padding-bottom: 10px; }
+      h1 { font-size: clamp(36px, 10vw, 48px); } .welcome-copy { margin-bottom: 23px; font-size: 14px; }
+      .suggestions { grid-template-columns: 1fr; gap: 8px; } .suggestion { min-height: 58px; }
+      .messages { gap: 24px; } .message { grid-template-columns: 29px minmax(0, 1fr); gap: 10px; }
+      .avatar { width: 28px; border-radius: 7px; }
+      .composer-area { padding: 10px 14px max(12px, env(safe-area-inset-bottom)); }
+      .composer-hint, .disclaimer { font-size: 9px; }
     }
-
-    @page {
-      size: A4;
-      margin: 18mm;
+    @media (max-width: 380px) {
+      .topbar { align-items: flex-start; flex-direction: column; justify-content: center; gap: 0; padding-top: 5px; padding-bottom: 5px; }
     }
-
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
     @media print {
-      body {
-        background: #fff;
-        color: #1d1b1a;
-        font-family: Georgia, serif;
-        print-color-adjust: exact;
-        -webkit-print-color-adjust: exact;
-      }
-
-      .page {
-        width: 100%;
-        margin: 0;
-        padding: 0;
-      }
-
-      .topbar,
-      .hero,
-      .composer,
-      .quick-links,
-      .loading,
-      .error,
-      .answer-header,
-      .query-row {
-        display: none !important;
-      }
-
-      .result,
-      .result.visible {
-        display: block !important;
-        margin: 0;
-        padding: 0;
-        border: 0;
-        animation: none;
-      }
-
-      .result-wrap {
-        gap: 24px;
-      }
-
-      .export-question {
-        display: block;
-        margin-bottom: 22px;
-        padding-bottom: 14px;
-        border-bottom: 1px solid #b9b2a9;
-      }
-
-      .export-question-label,
-      .answer-label,
-      .sources-header {
-        color: #5f5650;
-        font-family: Arial, sans-serif;
-        font-size: 9pt;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-
-      .export-question-text {
-        margin: 6px 0 0;
-        font-size: 16pt;
-        line-height: 1.35;
-      }
-
-      .answer-card {
-        padding: 0;
-        border: 0;
-        background: none;
-        box-shadow: none;
-      }
-
-      .answer-body {
-        font-size: 13pt;
-        line-height: 1.55;
-      }
-
-      .sources {
-        border-top: 1px solid #b9b2a9;
-        padding-top: 12px;
-      }
-
-      .source-list {
-        gap: 8px;
-      }
-
-      .source-item {
-        grid-template-columns: 28px 1fr;
-        padding: 8px 0;
-        border: 0;
-        border-bottom: 1px solid #ded9d2;
-        border-radius: 0;
-        background: none;
-        break-inside: avoid;
-      }
-
-      .source-number {
-        background: none;
-        border: 1px solid #b9b2a9;
-      }
-
-      .source-title {
-        white-space: normal;
-      }
-
-      .source-url {
-        display: block;
-        margin-top: 3px;
-        color: #5f5650;
-        font-family: Arial, sans-serif;
-        font-size: 8pt;
-        overflow-wrap: anywhere;
-      }
-
-      .source-arrow {
-        display: none;
-      }
-
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
+      .sidebar, .topbar, .composer-area, .answer-actions { display: none !important; }
+      .app { display: block; } .conversation { width: 100%; padding: 0; } .welcome { display: none !important; }
+      .message { break-inside: avoid; } .source-item { padding-left: 0; }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <header class="topbar">
-      <div class="brand" aria-label="Research Agent header">
-        <div class="brand-mark">R</div>
-        <div>
-          <div class="brand-name">Research Agent</div>
+  <div class="app">
+    <aside class="sidebar" aria-label="Research navigation">
+      <div class="brand"><div class="brand-mark" aria-hidden="true">f</div><div><div class="brand-name">Fieldnote</div><div class="brand-caption">Research, with receipts</div></div></div>
+      <button class="new-chat" id="new-chat" type="button"><span class="new-chat-icon" aria-hidden="true">+</span><span>New research</span></button>
+      <section class="side-section" aria-label="Current conversation"><h2 class="side-section-label">This session</h2><div class="thread-link active" id="thread-title">New conversation</div></section>
+      <div class="sidebar-spacer"></div>
+      <div class="service-status"><span class="status-dot" aria-hidden="true"></span><div>Web research<span class="status-note">Answers include sources</span></div></div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-title">Research chat</div>
+        <div class="mode-switch" role="tablist" aria-label="Assistant sections">
+          <button class="mode-button" id="web-tab" type="button" role="tab" aria-controls="web-panel" aria-selected="true">Web search</button>
+          <button class="mode-button" id="chat-tab" type="button" role="tab" aria-controls="chat-panel" aria-selected="false">Chat</button>
         </div>
-      </div>
-      <div class="tagline">Independent reading &amp; synthesis</div>
-    </header>
-
-    <main>
-      <section class="hero">
-        <div>
-          <div class="eyebrow">Research workspace</div>
-          <h1>Ask a question. Follow the evidence.</h1>
-          <p class="lead">Search the web, read the relevant sources, and return a grounded answer in a format designed for careful reading.</p>
-        </div>
-
-        <aside class="meta-box" aria-label="Research details">
-          <span class="meta-label">Current workflow</span>
-          <div class="meta-list">
-            <div class="meta-item"><strong>Planning</strong><span>Query design</span></div>
-            <div class="meta-item"><strong>Search</strong><span>Web retrieval</span></div>
-            <div class="meta-item"><strong>Reading</strong><span>Source extraction</span></div>
-            <div class="meta-item"><strong>Synthesis</strong><span>Evidence-based answer</span></div>
-          </div>
-        </aside>
-      </section>
-
-      <section class="composer" aria-label="Question input">
-        <form id="research-form">
-          <textarea id="question" name="question" placeholder="Ask for a synthesis, comparison, or explanation..." required aria-label="Question"></textarea>
-          <div class="composer-bar">
-            <div class="hint">Press Enter to submit</div>
-            <button type="submit" class="submit" id="submit-btn">Research</button>
-          </div>
-        </form>
-      </section>
-
-      <div class="quick-links" aria-label="Suggested questions">
-        <span class="quick-label">Try:</span>
-        <button class="chip" type="button" data-q="What is the capital of France and how has it changed over time?">Capital of France</button>
-        <button class="chip" type="button" data-q="How does CRISPR gene editing work, and what are the main ethical concerns?">CRISPR ethics</button>
-        <button class="chip" type="button" data-q="What are the key differences between classical and quantum computing?">Quantum vs classical</button>
-      </div>
-
-      <div class="loading" id="loading" aria-live="polite">
-        <div class="loading-line">
-          <span class="loading-dot"></span>
-          <span class="loading-dot"></span>
-          <span class="loading-dot"></span>
-          <span id="loading-text">Searching the web…</span>
-        </div>
-      </div>
-
-      <div class="error" id="error-box" aria-live="polite"></div>
-
-      <section class="result" id="result-panel" aria-live="polite">
-        <div class="result-wrap">
-          <article class="answer-card">
-            <div class="export-question">
-              <div class="export-question-label">Research question</div>
-              <p class="export-question-text" id="export-question-text"></p>
+      </header>
+      <section class="workspace-tab" id="web-panel" role="tabpanel" aria-labelledby="web-tab">
+        <section class="conversation" aria-label="Web search conversation" aria-live="polite">
+          <div class="welcome" id="web-welcome">
+            <div class="welcome-kicker">Web research</div>
+            <h1>What are you curious about?</h1>
+            <p class="welcome-copy">Ask a question and I’ll search the web, read relevant sources, and bring the evidence back into the conversation.</p>
+            <div class="suggestion-label">A few places to start</div>
+            <div class="suggestions">
+              <button class="suggestion" type="button" data-mode="web" data-q="How does CRISPR gene editing work, and what are the main ethical concerns?"><span>CRISPR, clearly explained</span><small>Mechanisms and ethical questions</small></button>
+              <button class="suggestion" type="button" data-mode="web" data-q="What are the key differences between classical and quantum computing?"><span>Quantum vs. classical computing</span><small>Compare the ideas and use cases</small></button>
+              <button class="suggestion" type="button" data-mode="web" data-q="What does the latest research say about urban trees and heat reduction?"><span>Can urban trees cool a city?</span><small>Find the evidence behind the claim</small></button>
+              <button class="suggestion" type="button" data-mode="web" data-q="How have battery energy storage costs changed, and what is driving the trend?"><span>The changing cost of batteries</span><small>Track costs and what moves them</small></button>
             </div>
-            <div class="answer-header">
-              <div class="answer-label">Answer</div>
-              <div class="result-actions">
-                <button type="button" class="copy-btn" id="copy-btn">Copy</button>
-                <button type="button" class="export-btn" id="export-btn">Export PDF</button>
-              </div>
-            </div>
-
-            <div class="query-row" id="query-row"></div>
-
-            <div class="answer-body" id="answer-body"></div>
-          </article>
-
-          <div class="sources">
-            <div class="sources-header">Sources</div>
-            <div class="source-list" id="source-list"></div>
           </div>
+          <div class="messages" id="web-messages"></div>
+        </section>
+        <div class="composer-area">
+          <form class="composer" id="web-form">
+            <textarea id="web-question" name="question" rows="1" maxlength="1000" placeholder="Ask a research question..." aria-label="Web research question" required></textarea>
+            <div class="composer-controls"><span class="composer-hint">Enter to send · Shift + Enter for a new line</span><button class="send-button" type="submit" aria-label="Send web search question" title="Send question">↑</button></div>
+          </form>
+          <p class="disclaimer">Check cited sources for important decisions.</p>
+        </div>
+      </section>
+      <section class="workspace-tab" id="chat-panel" role="tabpanel" aria-labelledby="chat-tab" hidden>
+        <section class="conversation" aria-label="Chat conversation" aria-live="polite">
+          <div class="welcome" id="chat-welcome">
+            <div class="welcome-kicker">Normal chat</div>
+            <h1>What would you like to talk about?</h1>
+            <p class="welcome-copy">Ask anything and I’ll respond conversationally, using the context of this chat.</p>
+          </div>
+          <div class="messages" id="chat-messages"></div>
+        </section>
+        <div class="composer-area">
+          <form class="composer" id="chat-form">
+            <textarea id="chat-question" name="question" rows="1" maxlength="1000" placeholder="Message Fieldnote..." aria-label="Chat message" required></textarea>
+            <div class="composer-controls"><span class="composer-hint">Enter to send · Shift + Enter for a new line</span><button class="send-button" type="submit" aria-label="Send chat message" title="Send message">↑</button></div>
+          </form>
+          <p class="disclaimer">Responses may be inaccurate; verify important details.</p>
         </div>
       </section>
     </main>
   </div>
-
   <script>
-    const form = document.getElementById('research-form');
-    const questionInput = document.getElementById('question');
-    const submitBtn = document.getElementById('submit-btn');
-    const loading = document.getElementById('loading');
-    const loadingText = document.getElementById('loading-text');
-    const errorBox = document.getElementById('error-box');
-    const resultPanel = document.getElementById('result-panel');
-    const answerBody = document.getElementById('answer-body');
-    const exportQuestionText = document.getElementById('export-question-text');
-    const queryRow = document.getElementById('query-row');
-    const sourceList = document.getElementById('source-list');
-    const copyBtn = document.getElementById('copy-btn');
-    const exportBtn = document.getElementById('export-btn');
-    const chips = document.querySelectorAll('.chip');
-
-    let currentAnswer = '';
-    let currentQuestion = '';
-
-    const statusSequence = [
-      'Searching the web…',
-      'Reading sources…',
-      'Writing your answer…'
-    ];
-
-    const mockResponse = {
-      answer: "Paris is the capital of France, and it has been the principal political center of the country since the late 17th century. The modern capital was consolidated under the monarchy and later remained the center of government through the Revolution, the Empire, and the republic. France has had other important seats of power in earlier periods, but Paris became the country's enduring administrative and symbolic center. In that sense, the answer is both historical and contemporary: Paris is the capital of France today, but government authority has moved in stages across different periods of the state's development.",
-      queries: [
-        'capital of France historical development',
-        'government seats of France before Paris',
-        'Paris as national capital timeline'
-      ],
-      sources: [
-        { id: 1, title: 'Paris – Capital of France', url: 'https://en.wikipedia.org/wiki/Paris' },
-        { id: 2, title: 'History of France', url: 'https://en.wikipedia.org/wiki/History_of_France' },
-        { id: 3, title: 'French Revolution', url: 'https://en.wikipedia.org/wiki/French_Revolution' }
-      ]
+    const threadTitle = document.getElementById('thread-title');
+    const newChatButton = document.getElementById('new-chat');
+    const modeTabs = {
+      web: document.getElementById('web-tab'),
+      chat: document.getElementById('chat-tab')
     };
+    const modePanels = {
+      web: {
+        panel: document.getElementById('web-panel'),
+        form: document.getElementById('web-form'),
+        questionInput: document.getElementById('web-question'),
+        sendButton: document.querySelector('#web-form .send-button'),
+        messages: document.getElementById('web-messages'),
+        welcome: document.getElementById('web-welcome'),
+        history: [],
+        hasConversation: false,
+        title: 'New conversation'
+      },
+      chat: {
+        panel: document.getElementById('chat-panel'),
+        form: document.getElementById('chat-form'),
+        questionInput: document.getElementById('chat-question'),
+        sendButton: document.querySelector('#chat-form .send-button'),
+        messages: document.getElementById('chat-messages'),
+        welcome: document.getElementById('chat-welcome'),
+        history: [],
+        hasConversation: false,
+        title: 'New conversation'
+      }
+    };
+    let currentMode = 'web';
 
-    function setLoadingState(index) {
-      loadingText.textContent = statusSequence[index % statusSequence.length];
+    function setMode(mode) {
+      currentMode = mode;
+      for (const [name, tab] of Object.entries(modeTabs)) {
+        const selected = name === mode;
+        tab.setAttribute('aria-selected', String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+        modePanels[name].panel.hidden = !selected;
+      }
+      threadTitle.textContent = modePanels[mode].title;
+    }
+
+    function escapeHtml(text) {
+      return String(text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function answerText(value) {
+      if (typeof value === 'string') return value;
+      if (Array.isArray(value)) return value.map(answerText).filter(Boolean).join('\n');
+      if (value && typeof value === 'object') {
+        for (const key of ['answer', 'content', 'text']) {
+          if (value[key] !== undefined) return answerText(value[key]);
+        }
+      }
+      return '';
+    }
+
+    function errorText(value) {
+      if (typeof value === 'string') return value;
+      if (Array.isArray(value)) {
+        return value.map((item) => {
+          const location = item && Array.isArray(item.loc) ? item.loc.filter((part) => part !== 'body').join('.') : '';
+          const message = errorText(item && typeof item === 'object' ? item.msg || item.message || item.detail || item.error : item);
+          return location && message ? location + ': ' + message : message;
+        }).filter(Boolean).join('; ');
+      }
+      if (value && typeof value === 'object') return errorText(value.detail || value.message || value.msg || value.error || value.reason);
+      return '';
     }
 
     function formatAnswer(text) {
-      let safe = String(text || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-
-      safe = safe.replace(/\[(\d+)\]/g, '<a href="#source-$1" class="citation-link" data-source-id="$1">[$1]</a>');
-      safe = safe.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-      safe = safe.replace(/\n\n/g, '</p><p>');
-      safe = safe.replace(/\n/g, '<br>');
-      return '<p>' + safe + '</p>';
+      const safe = escapeHtml(text).replace(/\[(\d+)\]/g, '<a href="#source-$1" class="citation-link" data-source-id="$1">[$1]</a>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      return safe.split(/\n\s*\n/).map((paragraph) => '<p>' + paragraph.replace(/\n/g, '<br>') + '</p>').join('');
     }
 
     function hostFromUrl(url) {
-      try {
-        return new URL(url).hostname.replace(/^www\./, '');
-      } catch {
-        return 'source';
-      }
+      try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return 'source'; }
     }
 
-    function renderResults(data) {
-      currentAnswer = data.answer || '';
-      exportQuestionText.textContent = currentQuestion;
-      queryRow.innerHTML = (data.queries || []).map((q) => '<span class="query-pill">' + q + '</span>').join('');
+    function addMessage(role, label, messages) {
+      const article = document.createElement('article');
+      article.className = 'message ' + role;
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar'; avatar.setAttribute('aria-hidden', 'true'); avatar.textContent = role === 'assistant' ? 'f' : 'YOU';
+      const content = document.createElement('div'); content.className = 'message-content';
+      const name = document.createElement('div'); name.className = 'message-label'; name.textContent = label;
+      content.append(name); article.append(avatar, content); messages.append(article);
+      return { article, content };
+    }
 
-      answerBody.innerHTML = formatAnswer(data.answer || '');
+    function appendSources(content, sources) {
+      if (!Array.isArray(sources) || !sources.length) return;
+      const block = document.createElement('section'); block.className = 'source-block';
+      const heading = document.createElement('div'); heading.className = 'source-heading'; heading.textContent = 'Sources';
+      const list = document.createElement('div'); list.className = 'source-list';
+      for (const source of sources) {
+        let safeUrl;
+        try { const parsed = new URL(source.url); if (!['http:', 'https:'].includes(parsed.protocol)) continue; safeUrl = parsed.href; } catch { continue; }
+        const link = document.createElement('a'); link.className = 'source-item'; link.id = 'source-' + source.id; link.href = safeUrl; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.dataset.sourceId = source.id;
+        const number = document.createElement('span'); number.className = 'source-number'; number.textContent = source.id;
+        const meta = document.createElement('span'); meta.className = 'source-meta';
+        const title = document.createElement('span'); title.className = 'source-title'; title.textContent = source.title || safeUrl;
+        const domain = document.createElement('span'); domain.className = 'source-domain'; domain.textContent = hostFromUrl(safeUrl);
+        meta.append(title, domain);
+        const arrow = document.createElement('span'); arrow.className = 'source-arrow'; arrow.setAttribute('aria-hidden', 'true'); arrow.textContent = '↗';
+        link.append(number, meta, arrow); list.append(link);
+      }
+      if (!list.childElementCount) return;
+      block.append(heading, list); content.append(block);
+    }
 
-      sourceList.innerHTML = (data.sources || []).map((source) => `
-        <a class="source-item" id="source-${source.id}" href="${source.url}" target="_blank" rel="noopener noreferrer" data-source-id="${source.id}">
-          <span class="source-number">${source.id}</span>
-          <span class="source-meta">
-            <span class="source-title">${source.title}</span>
-            <span class="source-domain">${hostFromUrl(source.url)}</span>
-            <span class="source-url">${source.url}</span>
-          </span>
-          <span class="source-arrow">↗</span>
-        </a>
-      `).join('');
-
-      document.querySelectorAll('.citation-link').forEach((link) => {
-        const sourceId = link.dataset.sourceId;
-        const target = document.getElementById(`source-${sourceId}`);
-        if (!target) return;
-
-        link.addEventListener('mouseenter', () => target.classList.add('highlighted'));
-        link.addEventListener('mouseleave', () => target.classList.remove('highlighted'));
-        link.addEventListener('click', (event) => {
+    function showAnswer(content, data, question) {
+      const body = document.createElement('div'); body.className = 'answer-body'; body.innerHTML = formatAnswer(data.answer || 'No answer was returned.'); content.append(body);
+      appendSources(content, data.sources);
+      body.querySelectorAll('.citation-link').forEach((citation) => {
+        citation.addEventListener('click', (event) => {
           event.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          target.classList.add('highlighted');
-          setTimeout(() => target.classList.remove('highlighted'), 1300);
+          const source = content.querySelector('#source-' + CSS.escape(citation.dataset.sourceId));
+          if (!source) return;
+          source.scrollIntoView({ behavior: 'smooth', block: 'center' }); source.classList.add('highlighted');
+          setTimeout(() => source.classList.remove('highlighted'), 1300);
         });
       });
-
-      resultPanel.classList.add('visible');
-    }
-
-    function hideStates() {
-      errorBox.classList.remove('active');
-      errorBox.textContent = '';
-      loading.classList.remove('active');
-      resultPanel.classList.remove('visible');
-    }
-
-    questionInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        form.requestSubmit();
-      }
-    });
-
-    chips.forEach((chip) => {
-      chip.addEventListener('click', () => {
-        questionInput.value = chip.dataset.q;
-        form.requestSubmit();
+      const actions = document.createElement('div'); actions.className = 'answer-actions';
+      const copy = document.createElement('button'); copy.className = 'text-action'; copy.type = 'button'; copy.textContent = 'Copy answer';
+      copy.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(data.answer || ''); copy.textContent = 'Copied'; setTimeout(() => { copy.textContent = 'Copy answer'; }, 1400); }
+        catch { copy.textContent = 'Copy unavailable'; }
       });
-    });
-
-    copyBtn.addEventListener('click', async () => {
-      if (!currentAnswer) return;
-      try {
-        await navigator.clipboard.writeText(currentAnswer);
-        copyBtn.textContent = 'Copied';
-        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1400);
-      } catch {
-        copyBtn.textContent = 'Failed';
-      }
-    });
-
-    exportBtn.addEventListener('click', () => window.print());
-
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const question = questionInput.value.trim();
-      if (!question) return;
-      currentQuestion = question;
-
-      submitBtn.disabled = true;
-      hideStates();
-      loading.classList.add('active');
-      setLoadingState(0);
-
-      let step = 0;
-      const interval = setInterval(() => {
-        step = (step + 1) % statusSequence.length;
-        setLoadingState(step);
-      }, 1400);
-
-      try {
-        let payload = mockResponse;
-
+      const download = document.createElement('button'); download.className = 'text-action'; download.type = 'button'; download.textContent = 'Download PDF';
+      download.addEventListener('click', async () => {
+        download.disabled = true;
         try {
-          const response = await fetch('/research', {
+          const response = await fetch('/export/pdf', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question })
+            body: JSON.stringify({ question, answer: data.answer || '', sources: data.sources || [] })
           });
-
-          if (response.ok) {
-            const json = await response.json();
-            if (json && json.answer) {
-              payload = json;
-            }
+          if (!response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            throw new Error(errorText(payload.detail) || 'PDF export failed. Please try again.');
           }
-        } catch {
-          payload = mockResponse;
+          const fileUrl = URL.createObjectURL(await response.blob());
+          const link = document.createElement('a');
+          link.href = fileUrl;
+          link.download = 'fieldnote-answer.pdf';
+          document.body.append(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+        } catch (error) {
+          showError(content, errorText(error) || 'PDF export failed. Please try again.');
+        } finally {
+          download.disabled = false;
         }
+      });
+      actions.append(copy, download); content.append(actions);
+    }
 
-        clearInterval(interval);
-        loading.classList.remove('active');
-        renderResults(payload);
-      } catch (err) {
-        clearInterval(interval);
-        loading.classList.remove('active');
-        errorBox.textContent = 'The request could not be completed. Please try again.';
-        errorBox.classList.add('active');
-      } finally {
-        submitBtn.disabled = false;
+    function showError(content, message) {
+      const error = document.createElement('div'); error.className = 'error-message'; error.textContent = message; content.append(error);
+    }
+
+    async function submitQuestion(question, mode) {
+      const state = modePanels[mode];
+      const trimmed = question.trim();
+      if (!trimmed || state.sendButton.disabled) return;
+      state.welcome.hidden = true;
+      if (!state.hasConversation) {
+        state.title = trimmed.length > 34 ? trimmed.slice(0, 34) + '…' : trimmed;
+        state.hasConversation = true;
+        if (currentMode === mode) threadTitle.textContent = state.title;
       }
+      const userMessage = addMessage('user', 'You', state.messages);
+      const userText = document.createElement('div'); userText.className = 'user-text'; userText.textContent = trimmed; userMessage.content.append(userText);
+      const assistantMessage = addMessage('assistant', 'Fieldnote', state.messages);
+      assistantMessage.article.hidden = true;
+      state.sendButton.disabled = true; state.questionInput.disabled = true; state.questionInput.value = ''; state.questionInput.style.height = 'auto';
+      try {
+        const history = state.history.slice(-8);
+        const response = await fetch('/research', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: trimmed, history, mode }) });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(errorText(payload.detail) || errorText(payload.message) || 'The research service could not complete this question. Please try again.');
+        const answer = answerText(payload.answer).trim();
+        if (!answer) throw new Error('The research service returned an unsupported or empty answer. Please try again.');
+        payload.answer = answer;
+        state.history = [...history, { role: 'user', content: trimmed }, { role: 'assistant', content: payload.answer }].slice(-8);
+        assistantMessage.article.hidden = false; showAnswer(assistantMessage.content, payload, trimmed);
+      } catch (error) {
+        assistantMessage.article.hidden = false; showError(assistantMessage.content, errorText(error) || 'Could not reach the research service. Check that the app is running, then try again.');
+      } finally {
+        state.sendButton.disabled = false; state.questionInput.disabled = false;
+        assistantMessage.article.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }
+
+    for (const [mode, state] of Object.entries(modePanels)) {
+      state.form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        submitQuestion(state.questionInput.value, mode);
+      });
+      state.questionInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); state.form.requestSubmit(); }
+      });
+      state.questionInput.addEventListener('input', () => {
+        state.questionInput.style.height = 'auto'; state.questionInput.style.height = Math.min(state.questionInput.scrollHeight, 180) + 'px';
+      });
+      state.panel.querySelectorAll('.suggestion').forEach((button) => {
+        button.addEventListener('click', () => submitQuestion(button.dataset.q, mode));
+      });
+      modeTabs[mode].addEventListener('click', () => setMode(mode));
+      modeTabs[mode].addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        const nextMode = event.key === 'Home' || event.key === 'ArrowLeft' ? 'web' : 'chat';
+        setMode(nextMode);
+        modeTabs[nextMode].focus();
+      });
+    }
+
+    newChatButton.addEventListener('click', () => {
+      const state = modePanels[currentMode];
+      state.messages.replaceChildren(); state.welcome.hidden = false; state.title = 'New conversation'; state.hasConversation = false; state.history = [];
+      threadTitle.textContent = state.title;
+      state.questionInput.value = ''; state.questionInput.focus();
     });
   </script>
 </body>

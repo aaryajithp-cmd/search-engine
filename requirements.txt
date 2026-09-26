@@ -5,3 +5,4 @@ trafilatura
 groq
 python-dotenv
 requests
+reportlab
